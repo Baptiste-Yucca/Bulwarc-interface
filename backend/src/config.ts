@@ -15,6 +15,7 @@ export const BULWARC_ADDRESS = (process.env.BULWARC_ADDRESS || "0xA23B7bdf94717A
 export const ORACLE_ADDRESS = (process.env.ORACLE_ADDRESS || "0x3462614cd401DD667B3A30D1c7E8b731DCE7E003") as Address;
 
 export const PORT = parseInt(process.env.PORT || "3001");
+export const DEPLOY_BLOCK = BigInt(process.env.DEPLOY_BLOCK || "35486300");
 
 export const BULWARC_ABI = [
   // --- Read ---

@@ -1,12 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { publicClient } from "../config/client";
-import {
-  BULWARC_ADDRESS,
-  BULWARC_ABI,
-  ORACLE_ABI,
-  ORACLE_ADDRESS,
-} from "../config/contracts";
 import { parseMockShields } from "../config/mockData";
+
+const API = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 export interface ShieldEvent {
   txHash: string;
@@ -37,6 +32,47 @@ export interface Fill {
 
 export const ARCSCAN_TX = "https://testnet.arcscan.app/tx/";
 
+interface ApiShield {
+  id: number;
+  subscriber: string;
+  strike: string;
+  notional: string;
+  premium: string;
+  subscriber_fee: string;
+  filled: string;
+  expiry: string;
+  delivery_rate: number;
+  validator: string;
+  is_reverse: number;
+  status: number;
+  created_tx: string | null;
+  created_at: number | null;
+}
+
+function mapShield(s: ApiShield): Shield {
+  return {
+    id: s.id,
+    subscriber: s.subscriber,
+    strike: BigInt(s.strike),
+    notional: BigInt(s.notional),
+    premium: BigInt(s.premium),
+    subscriberFee: BigInt(s.subscriber_fee),
+    filled: BigInt(s.filled),
+    expiry: BigInt(s.expiry),
+    deliveryRate: s.delivery_rate,
+    validator: s.validator,
+    isReverse: s.is_reverse === 1,
+    status: s.status,
+    createdEvent: s.created_tx
+      ? {
+          txHash: s.created_tx,
+          blockNumber: 0n,
+          timestamp: s.created_at ?? 0,
+        }
+      : undefined,
+  };
+}
+
 export function useShields() {
   const [shields, setShields] = useState<Shield[]>([]);
   const [oraclePrice, setOraclePrice] = useState<bigint>(0n);
@@ -44,87 +80,20 @@ export function useShields() {
 
   const refresh = useCallback(async () => {
     try {
-      const count = await publicClient.readContract({
-        address: BULWARC_ADDRESS,
-        abi: BULWARC_ABI,
-        functionName: "getShieldCount",
-      });
+      const [shieldsRes, oracleRes] = await Promise.all([
+        fetch(`${API}/shields`),
+        fetch(`${API}/oracle`),
+      ]);
 
-      const n = Number(count);
+      const apiShields: ApiShield[] = await shieldsRes.json();
+      const oracle = await oracleRes.json();
 
-      // Fetch all ShieldCreated events in one call
-      const logs = await publicClient.getContractEvents({
-        address: BULWARC_ADDRESS,
-        abi: BULWARC_ABI,
-        eventName: "ShieldCreated",
-        fromBlock: 0n,
-      });
-
-      // Map shieldId -> log
-      const logByShieldId = new Map<number, typeof logs[number]>();
-      for (const log of logs) {
-        const id = Number((log as any).args.shieldId);
-        logByShieldId.set(id, log);
-      }
-
-      // Fetch block timestamps for unique blocks
-      const uniqueBlocks = [...new Set(logs.map((l) => l.blockNumber))];
-      const blockTimestamps = new Map<bigint, number>();
-      await Promise.all(
-        uniqueBlocks.map(async (bn) => {
-          if (bn == null) return;
-          const block = await publicClient.getBlock({ blockNumber: bn });
-          blockTimestamps.set(bn, Number(block.timestamp));
-        })
-      );
-
-      const results: Shield[] = [];
-      for (let i = 0; i < n; i++) {
-        const data = await publicClient.readContract({
-          address: BULWARC_ADDRESS,
-          abi: BULWARC_ABI,
-          functionName: "getShield",
-          args: [BigInt(i)],
-        });
-
-        const log = logByShieldId.get(i);
-        let createdEvent: ShieldEvent | undefined;
-        if (log && log.transactionHash && log.blockNumber != null) {
-          createdEvent = {
-            txHash: log.transactionHash,
-            blockNumber: log.blockNumber,
-            timestamp: blockTimestamps.get(log.blockNumber) ?? 0,
-          };
-        }
-
-        results.push({
-          id: i,
-          subscriber: data.subscriber,
-          strike: data.strike,
-          notional: data.notional,
-          premium: data.premium,
-          subscriberFee: data.subscriberFee,
-          filled: data.filled,
-          expiry: data.expiry,
-          deliveryRate: data.deliveryRate,
-          validator: data.validator,
-          isReverse: data.isReverse,
-          status: data.status,
-          createdEvent,
-        });
-      }
-      // Append mock data for demo
+      const mapped = apiShields.map(mapShield);
       const mockShields = parseMockShields();
-      setShields([...results, ...mockShields]);
-
-      const [price] = await publicClient.readContract({
-        address: ORACLE_ADDRESS,
-        abi: ORACLE_ABI,
-        functionName: "getPrice",
-      });
-      setOraclePrice(price);
+      setShields([...mapped, ...mockShields]);
+      setOraclePrice(BigInt(oracle.price));
     } catch (e) {
-      console.error("Failed to fetch shields:", e);
+      console.error("Failed to fetch from API:", e);
       const mockShields = parseMockShields();
       setShields(mockShields);
     } finally {
@@ -134,7 +103,7 @@ export function useShields() {
 
   useEffect(() => {
     refresh();
-    const interval = setInterval(refresh, 15_000);
+    const interval = setInterval(refresh, 5_000);
     return () => clearInterval(interval);
   }, [refresh]);
 
@@ -142,11 +111,17 @@ export function useShields() {
 }
 
 export async function getFills(shieldId: number): Promise<Fill[]> {
-  const fills = await publicClient.readContract({
-    address: BULWARC_ADDRESS,
-    abi: BULWARC_ABI,
-    functionName: "getFills",
-    args: [BigInt(shieldId)],
-  });
-  return fills.map((f) => ({ guardian: f.guardian, amount: f.amount }));
+  // Mock shields (id >= 100) don't have real fills
+  if (shieldId >= 100) return [];
+
+  try {
+    const res = await fetch(`${API}/shields/${shieldId}/fills`);
+    const data = await res.json();
+    return data.map((f: { guardian: string; amount: string }) => ({
+      guardian: f.guardian,
+      amount: BigInt(f.amount),
+    }));
+  } catch {
+    return [];
+  }
 }

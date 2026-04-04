@@ -5,6 +5,7 @@ import {
   BULWARC_ABI,
   ORACLE_ADDRESS,
   ORACLE_ABI,
+  DEPLOY_BLOCK,
 } from "./config.js";
 import db, {
   getLastIndexedBlock,
@@ -109,7 +110,7 @@ async function catchUp() {
     return latestBlock;
   }
 
-  let from = lastBlock > 0n ? lastBlock + 1n : 0n;
+  let from = lastBlock > 0n ? lastBlock + 1n : DEPLOY_BLOCK;
   console.log(`Catching up: block ${from} → ${latestBlock}`);
   let totalEvents = 0;
 

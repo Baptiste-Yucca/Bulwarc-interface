@@ -16,17 +16,17 @@ function App() {
   const [page, setPage] = useState<Page>("all-offers");
   const [creating, setCreating] = useState(false);
   const [currencyMode, setCurrencyMode] = useState<CurrencyMode>("EUR/USD");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const selectedShield = selectedId !== null
     ? shields.find((s) => s.id === selectedId) ?? null
     : null;
 
-  // Filter shields by connected user
   const myShields = address
     ? shields.filter((s) => s.subscriber.toLowerCase() === address.toLowerCase())
     : [];
 
-  // Exercised shields for the connected user
   const mySalaryShields = address
     ? shields.filter(
         (s) =>
@@ -40,7 +40,7 @@ function App() {
     : null;
 
   return (
-    <div className="app-layout">
+    <div className={`app-layout ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
       <Sidebar
         activePage={page}
         onNavigate={(p) => {
@@ -52,12 +52,22 @@ function App() {
         onToggleCurrency={() =>
           setCurrencyMode((m) => (m === "EUR/USD" ? "USD/EUR" : "EUR/USD"))
         }
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
       />
 
       <div className="app-main">
-        {/* Top bar */}
         <header className="topbar">
           <div className="topbar-left">
+            <button
+              className="hamburger"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-label="Menu"
+            >
+              <span /><span /><span />
+            </button>
             <h2 className="page-title">
               {page === "your-shields" && "Your Shields"}
               {page === "all-offers" && "All Offers"}
@@ -68,7 +78,7 @@ function App() {
             {address ? (
               <div className="wallet-info">
                 <span className="address-badge">{short}</span>
-                <button className="btn btn-outline" onClick={disconnect}>
+                <button className="btn btn-outline btn-sm" onClick={disconnect}>
                   Disconnect
                 </button>
               </div>
@@ -85,7 +95,6 @@ function App() {
         </header>
 
         <main className="content">
-          {/* YOUR SHIELDS */}
           {page === "your-shields" && (
             <>
               <div className="content-actions">
@@ -131,7 +140,6 @@ function App() {
             </>
           )}
 
-          {/* ALL OFFERS */}
           {page === "all-offers" && (
             <div className="shields-layout">
               <ShieldList
@@ -155,7 +163,6 @@ function App() {
             </div>
           )}
 
-          {/* MY SALARY */}
           {page === "my-salary" && (
             <MySalary
               shields={mySalaryShields}
