@@ -5,11 +5,15 @@ import {
   BULWARC_ADDRESS,
   BULWARC_ABI,
   ERC20_ABI,
-  USDC_ADDRESS,
-  EURC_ADDRESS,
 } from "../config/contracts";
 
-export function useContractWrite(walletClient: WalletClient | null) {
+export interface TxCallbacks {
+  onTxSent: (hash: string, label: string) => number;
+  onTxConfirmed: (id: number) => void;
+  onTxFailed: (id: number) => void;
+}
+
+export function useContractWrite(walletClient: WalletClient | null, tx?: TxCallbacks) {
   const [pending, setPending] = useState(false);
 
   const approveToken = useCallback(
@@ -21,9 +25,11 @@ export function useContractWrite(walletClient: WalletClient | null) {
         functionName: "approve",
         args: [BULWARC_ADDRESS, amount],
       });
+      const toastId = tx?.onTxSent(hash, "Approve token");
       await publicClient.waitForTransactionReceipt({ hash });
+      if (toastId != null) tx?.onTxConfirmed(toastId);
     },
-    [walletClient]
+    [walletClient, tx]
   );
 
   const exec = useCallback(
@@ -34,11 +40,11 @@ export function useContractWrite(walletClient: WalletClient | null) {
     ) => {
       if (!walletClient?.account) throw new Error("Not connected");
       setPending(true);
+      let toastId: number | undefined;
       try {
         if (approve && approve.amount > 0n) {
           await approveToken(approve.token, approve.amount);
         }
-        // Simulate first to get a clear revert reason
         const { request } = await publicClient.simulateContract({
           address: BULWARC_ADDRESS,
           abi: BULWARC_ABI,
@@ -47,16 +53,19 @@ export function useContractWrite(walletClient: WalletClient | null) {
           account: walletClient.account,
         } as any);
         const hash = await walletClient.writeContract(request as any);
+        toastId = tx?.onTxSent(hash, functionName);
         await publicClient.waitForTransactionReceipt({ hash });
+        if (toastId != null) tx?.onTxConfirmed(toastId);
       } catch (err) {
         console.error(`[BulwArc] ${functionName} failed:`, err);
+        if (toastId != null) tx?.onTxFailed(toastId);
         throw err;
       } finally {
         setPending(false);
       }
     },
-    [walletClient, approveToken]
+    [walletClient, approveToken, tx]
   );
 
-  return { exec, pending, USDC_ADDRESS, EURC_ADDRESS };
+  return { exec, pending };
 }
