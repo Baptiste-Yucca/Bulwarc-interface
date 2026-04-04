@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { parseMockShields } from "../config/mockData";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
@@ -89,13 +88,11 @@ export function useShields() {
       const oracle = await oracleRes.json();
 
       const mapped = apiShields.map(mapShield);
-      const mockShields = parseMockShields();
-      setShields([...mapped, ...mockShields]);
+      setShields(mapped);
       setOraclePrice(BigInt(oracle.price));
     } catch (e) {
       console.error("Failed to fetch from API:", e);
-      const mockShields = parseMockShields();
-      setShields(mockShields);
+      setShields([]);
     } finally {
       setLoading(false);
     }

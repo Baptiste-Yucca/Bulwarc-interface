@@ -2,17 +2,18 @@ import { useState } from "react";
 import type { WalletClient } from "viem";
 import { parseUnits } from "viem";
 import { premiumToken, premiumLabel, collateralLabel } from "../config/contracts";
-import { useContractWrite } from "../hooks/useContractWrite";
+import { useContractWrite, type TxCallbacks } from "../hooks/useContractWrite";
 import { rateLabel, type CurrencyMode } from "../config/display";
 
 interface Props {
   walletClient: WalletClient | null;
   currencyMode: CurrencyMode;
+  txCallbacks?: TxCallbacks;
   onSuccess: () => void;
   onClose: () => void;
 }
 
-export function CreateShield({ walletClient, currencyMode, onSuccess, onClose }: Props) {
+export function CreateShield({ walletClient, currencyMode, txCallbacks, onSuccess, onClose }: Props) {
   const [strike, setStrike] = useState(currencyMode === "EUR/USD" ? "0.92" : "1.0870");
   const [notional, setNotional] = useState("1000");
   const [premium, setPremium] = useState("5");
@@ -20,7 +21,7 @@ export function CreateShield({ walletClient, currencyMode, onSuccess, onClose }:
   const [validator, setValidator] = useState("");
   const [isReverse, setIsReverse] = useState(false);
   const [fundNow, setFundNow] = useState(true);
-  const { exec, pending } = useContractWrite(walletClient);
+  const { exec, pending } = useContractWrite(walletClient, txCallbacks);
 
   const pLabel = premiumLabel(isReverse);
   const cLabel = collateralLabel(isReverse);

@@ -7,7 +7,7 @@ import {
 import { formatRate, rateLabel, type CurrencyMode } from "../config/display";
 import type { Shield } from "../hooks/useShields";
 import { getFills, ARCSCAN_TX, type Fill } from "../hooks/useShields";
-import { useContractWrite } from "../hooks/useContractWrite";
+import { useContractWrite, type TxCallbacks } from "../hooks/useContractWrite";
 
 interface Props {
   shield: Shield;
@@ -15,6 +15,7 @@ interface Props {
   address: Address | null;
   oraclePrice: bigint;
   currencyMode: CurrencyMode;
+  txCallbacks?: TxCallbacks;
   onSuccess: () => void;
   onClose: () => void;
 }
@@ -30,11 +31,11 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export function ShieldDetail({ shield, walletClient, address, oraclePrice, currencyMode, onSuccess, onClose }: Props) {
+export function ShieldDetail({ shield, walletClient, address, oraclePrice, currencyMode, txCallbacks, onSuccess, onClose }: Props) {
   const [fills, setFills] = useState<Fill[]>([]);
   const [matchAmount, setMatchAmount] = useState("");
   const [deliveryInput, setDeliveryInput] = useState("100");
-  const { exec, pending } = useContractWrite(walletClient);
+  const { exec, pending } = useContractWrite(walletClient, txCallbacks);
   const s = shield;
 
   useEffect(() => { getFills(s.id).then(setFills).catch(console.error); }, [s.id, s.filled]);
@@ -83,11 +84,14 @@ export function ShieldDetail({ shield, walletClient, address, oraclePrice, curre
         {/* Fields */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           {s.createdEvent && <Field label="Created">{new Date(s.createdEvent.timestamp * 1000).toLocaleString()}</Field>}
-          <Field label="Subscriber"><span className="text-xs">{s.subscriber.slice(0, 6)}...{s.subscriber.slice(-4)}</span></Field>
+          <Field label="Subscriber">
+            <a href={`https://testnet.arcscan.app/address/${s.subscriber}`} target="_blank" rel="noopener noreferrer"
+              className="text-xs text-accent hover:underline">{s.subscriber.slice(0, 6)}...{s.subscriber.slice(-4)}</a>
+          </Field>
           <Field label="Strike">{formatRate(s.strike, currencyMode)} {rateLabel(currencyMode)}</Field>
           <Field label={`Notional`}>{fmt6(s.notional)} {cLabel}</Field>
           <Field label={`Premium`}>{fmt6(s.premium)} {pLabel}</Field>
-          <Field label={`Filled`}>{fmt6(s.filled)} / {fmt6(s.notional)} {cLabel}</Field>
+          <Field label={`Filled`}>{s.notional > 0n ? Number((s.filled * 100n) / s.notional) : 0}%</Field>
           <Field label="Delivery">{s.deliveryRate}%</Field>
           <Field label="Expiry">{new Date(Number(s.expiry) * 1000).toLocaleString()}</Field>
           <Field label="Status">
@@ -152,7 +156,7 @@ export function ShieldDetail({ shield, walletClient, address, oraclePrice, curre
               {pending ? "..." : "Expire"}
             </button>
           )}
-          {(s.status === 0 || s.status === 1) && s.filled === 0n && (
+          {(s.status === 0 || s.status === 1) && s.filled === 0n && isSubscriber && (
             <button onClick={handleCancel} disabled={pending}
               className="px-4 py-2 bg-neon-pink/15 border border-neon-pink/40 text-neon-pink text-xs font-bold rounded-lg hover:bg-neon-pink/25 disabled:opacity-50 transition-all cursor-pointer">
               {pending ? "..." : "Cancel"}

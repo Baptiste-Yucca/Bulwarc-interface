@@ -32,7 +32,7 @@ export function Header({
           <h1 className="text-xl font-bold text-accent glow-amber animate-flicker tracking-wider font-mono">
             BULWARC
           </h1>
-          <span className="hidden sm:inline text-[10px] text-dim uppercase tracking-[0.2em]">FX Shield Protocol</span>
+          <span className="hidden sm:inline text-[10px] text-dim uppercase tracking-[0.2em]">FX Hedge on Arc</span>
         </div>
 
         {/* Live price */}

@@ -1,16 +1,21 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useWallet } from "./hooks/useWallet";
 import { useShields } from "./hooks/useShields";
+import { useTxToast } from "./hooks/useTxToast";
 import { Header } from "./components/Header";
 import { OrderBook } from "./components/OrderBook";
 import { ShieldDetail } from "./components/ShieldDetail";
 import { CreateShield } from "./components/CreateShield";
 import { MySalary } from "./components/MySalary";
-import { ShieldList } from "./components/ShieldList";
+import { MyShields } from "./components/MyShields";
+import { FilterModal, DEFAULT_FILTERS, type Filters } from "./components/FilterModal";
+import { Billing } from "./components/Billing";
+import { TxToasts } from "./components/TxToasts";
 import type { CurrencyMode } from "./config/display";
+import type { TxCallbacks } from "./hooks/useContractWrite";
 import "./App.css";
 
-type Modal = "none" | "detail" | "create" | "my-shields" | "my-salary";
+type Modal = "none" | "detail" | "create" | "my-shields" | "my-salary" | "billing" | "filters";
 
 function App() {
   const { address, walletClient, connect, disconnect, connecting } = useWallet();
@@ -18,6 +23,14 @@ function App() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [modal, setModal] = useState<Modal>("none");
   const [currencyMode, setCurrencyMode] = useState<CurrencyMode>("EUR/USD");
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const { toasts, addToast, updateToast } = useTxToast();
+
+  const txCallbacks: TxCallbacks = useMemo(() => ({
+    onTxSent: addToast,
+    onTxConfirmed: (id: number) => updateToast(id, "ok"),
+    onTxFailed: (id: number) => updateToast(id, "error"),
+  }), [addToast, updateToast]);
 
   const selectedShield = selectedId !== null
     ? shields.find((s) => s.id === selectedId) ?? null
@@ -29,6 +42,11 @@ function App() {
 
   const mySalaryShields = address
     ? shields.filter((s) => s.status === 3 && s.subscriber.toLowerCase() === address.toLowerCase())
+    : [];
+
+  // Billable = funded shields (status >= 1, i.e. not CREATED)
+  const myBillableShields = address
+    ? shields.filter((s) => s.status >= 1 && s.subscriber.toLowerCase() === address.toLowerCase())
     : [];
 
   const openDetail = (id: number) => {
@@ -43,6 +61,9 @@ function App() {
 
   return (
     <div className="min-h-screen bg-bg text-slate-200 font-sans relative">
+      {/* Tx notifications */}
+      <TxToasts toasts={toasts} />
+
       {/* Header */}
       <Header
         address={address}
@@ -59,9 +80,23 @@ function App() {
           <h2 className="text-sm font-bold text-dim uppercase tracking-[0.2em] font-mono">
             Order Book
           </h2>
-          <div className="flex items-center gap-2 text-[10px] text-dim font-mono">
-            <span className="w-2 h-2 rounded-full bg-neon-green animate-pulse-dot" />
-            {shields.filter((s) => s.status <= 2).length} active shields
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setModal("filters")}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-border rounded-lg text-[10px] text-dim font-mono hover:border-accent/40 hover:text-accent transition-all cursor-pointer"
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              Filters
+              {(filters.sortBy !== "strike" || !filters.descending || filters.direction !== "all" || filters.hiddenStatuses.size > 0) && (
+                <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+              )}
+            </button>
+            <div className="flex items-center gap-2 text-[10px] text-dim font-mono">
+              <span className="w-2 h-2 rounded-full bg-neon-green animate-pulse-dot" />
+              {shields.filter((s) => s.status <= 2).length} active
+            </div>
           </div>
         </div>
 
@@ -70,6 +105,7 @@ function App() {
           loading={loading}
           onSelect={openDetail}
           currencyMode={currencyMode}
+          filters={filters}
         />
       </main>
 
@@ -95,6 +131,14 @@ function App() {
             >
               My Salary
             </button>
+            {myBillableShields.length > 0 && (
+              <button
+                onClick={() => setModal("billing")}
+                className="px-4 py-2 border border-accent/30 text-accent rounded-lg text-sm font-mono hover:bg-accent/10 transition-all cursor-pointer"
+              >
+                Billing
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -107,6 +151,7 @@ function App() {
           address={address}
           oraclePrice={oraclePrice}
           currencyMode={currencyMode}
+          txCallbacks={txCallbacks}
           onSuccess={() => { refresh(); closeModal(); }}
           onClose={closeModal}
         />
@@ -116,28 +161,20 @@ function App() {
         <CreateShield
           walletClient={walletClient}
           currencyMode={currencyMode}
+          txCallbacks={txCallbacks}
           onSuccess={() => { refresh(); closeModal(); }}
           onClose={closeModal}
         />
       )}
 
       {modal === "my-shields" && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={closeModal}>
-          <div className="glass rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto p-6 animate-glow-pulse" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-cyan glow-cyan font-mono">My Shields</h2>
-              <button onClick={closeModal} className="text-dim hover:text-white text-xl leading-none cursor-pointer">&times;</button>
-            </div>
-            <ShieldList
-              shields={myShields}
-              loading={loading}
-              selectedId={null}
-              onSelect={(id) => { closeModal(); setTimeout(() => openDetail(id), 100); }}
-              currencyMode={currencyMode}
-              emptyMessage="You haven't created any shields yet."
-            />
-          </div>
-        </div>
+        <MyShields
+          shields={myShields}
+          loading={loading}
+          currencyMode={currencyMode}
+          onSelect={(id) => { closeModal(); setTimeout(() => openDetail(id), 100); }}
+          onClose={closeModal}
+        />
       )}
 
       {modal === "my-salary" && (
@@ -145,6 +182,22 @@ function App() {
           shields={mySalaryShields}
           loading={loading}
           currencyMode={currencyMode}
+          onClose={closeModal}
+        />
+      )}
+
+      {modal === "billing" && (
+        <Billing
+          shields={myBillableShields}
+          currencyMode={currencyMode}
+          onClose={closeModal}
+        />
+      )}
+
+      {modal === "filters" && (
+        <FilterModal
+          filters={filters}
+          onChange={setFilters}
           onClose={closeModal}
         />
       )}

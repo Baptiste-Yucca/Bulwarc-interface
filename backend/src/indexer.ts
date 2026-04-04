@@ -46,21 +46,7 @@ async function syncShield(shieldId: number, createdTx?: string, createdAt?: numb
     createdAt,
   });
 
-  // Also sync fills
-  const fills = await client.readContract({
-    address: BULWARC_ADDRESS,
-    abi: BULWARC_ABI,
-    functionName: "getFills",
-    args: [BigInt(shieldId)],
-  });
-  for (const f of fills) {
-    insertFill({
-      shieldId,
-      guardian: f.guardian,
-      amount: f.amount.toString(),
-      txHash: createdTx || "sync",
-    });
-  }
+  // Fills are inserted via ShieldFilled events only — no duplicate sync
 }
 
 /** Process a single event log */
@@ -216,6 +202,13 @@ export function getOraclePrice() {
 /** Main entry point */
 export async function startIndexer() {
   console.log(`Indexer starting for ${BULWARC_ADDRESS}`);
+
+  // Clean up duplicate fills from previous sync bugs
+  db.exec(`
+    DELETE FROM fills WHERE rowid NOT IN (
+      SELECT MIN(rowid) FROM fills GROUP BY shield_id, guardian, amount
+    )
+  `);
 
   await catchUp();
   await fullShieldSync();
