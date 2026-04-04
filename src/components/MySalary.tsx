@@ -7,104 +7,63 @@ interface Props {
   shields: Shield[];
   loading: boolean;
   currencyMode: CurrencyMode;
+  onClose: () => void;
 }
 
 const fmt6 = (v: bigint) => (Number(v) / 1e6).toFixed(2);
 
-export function MySalary({ shields, loading, currencyMode }: Props) {
-  const exercised = shields;
-
-  if (loading) return <div className="card"><p>Loading...</p></div>;
-
+export function MySalary({ shields, loading, currencyMode, onClose }: Props) {
   return (
-    <div className="salary-page">
-      <div className="salary-header">
-        <h2>My Salary</h2>
-        <p className="salary-description">
-          Archive of exercised shields — your FX protection payslips.
-        </p>
-      </div>
-
-      {exercised.length === 0 ? (
-        <div className="card empty-state">
-          <p>No exercised shields yet.</p>
-          <p className="text-dim">
-            When you exercise a shield, it will appear here as a payslip record.
-          </p>
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="glass rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 animate-glow-pulse" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-bold text-neon-green glow-green font-mono">My Salary</h2>
+          <button onClick={onClose} className="text-dim hover:text-white text-xl leading-none cursor-pointer">&times;</button>
         </div>
-      ) : (
-        <>
-          <div className="salary-summary card">
-            <div className="salary-stat">
-              <span className="label">Total Shields Exercised</span>
-              <span className="value">{exercised.length}</span>
-            </div>
-          </div>
+        <p className="text-xs text-dim mb-4 font-mono">Exercised shields — your FX protection payslips.</p>
 
-          <div className="payslips">
-            {exercised.map((s) => {
+        {loading ? (
+          <div className="py-10 text-center text-dim text-sm font-mono animate-pulse">Loading...</div>
+        ) : shields.length === 0 ? (
+          <div className="py-10 text-center">
+            <div className="text-dim text-sm font-mono">No exercised shields yet.</div>
+            <div className="text-dim/50 text-xs mt-2">Exercise a shield to see it here.</div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {shields.map((s) => {
               const pLabel = premiumLabel(s.isReverse);
               const cLabel = collateralLabel(s.isReverse);
               return (
-                <div key={s.id} className="card payslip">
-                  <div className="payslip-header">
-                    <span className="payslip-id">
-                      Shield #{s.id}
-                      <span className={`dir-badge ${s.isReverse ? "reverse" : "normal"}`}>
+                <div key={s.id} className="bg-bg/60 rounded-xl p-4 border-l-[3px] border-l-neon-green">
+                  <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm font-mono text-neon-green">#{s.id}</span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${s.isReverse ? "bg-neon-pink/15 text-neon-pink" : "bg-cyan/15 text-cyan"}`}>
                         {s.isReverse ? "USD→EUR" : "EUR→USD"}
                       </span>
+                      {s.createdEvent && <span className="text-[10px] text-dim font-mono">{new Date(s.createdEvent.timestamp * 1000).toLocaleDateString()}</span>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-neon-green/15 text-neon-green">{SHIELD_STATUS[s.status]}</span>
                       {s.createdEvent && (
-                        <span className="payslip-date">
-                          {new Date(s.createdEvent.timestamp * 1000).toLocaleDateString()}
-                        </span>
-                      )}
-                    </span>
-                    <div className="payslip-actions">
-                      <span className="status-badge exercised">
-                        {SHIELD_STATUS[s.status]}
-                      </span>
-                      {s.createdEvent && (
-                        <a
-                          href={`${ARCSCAN_TX}${s.createdEvent.txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="tx-link"
-                        >
-                          View Tx
-                        </a>
+                        <a href={`${ARCSCAN_TX}${s.createdEvent.txHash}`} target="_blank" rel="noopener noreferrer"
+                          className="text-[10px] text-accent hover:underline font-mono">Tx &rarr;</a>
                       )}
                     </div>
                   </div>
-                  <div className="payslip-grid">
-                    <div>
-                      <span className="label">Strike</span>
-                      <span className="value">{formatRate(s.strike, currencyMode)} {rateLabel(currencyMode)}</span>
-                    </div>
-                    <div>
-                      <span className="label">Notional ({cLabel})</span>
-                      <span className="value">{fmt6(s.notional)} {cLabel}</span>
-                    </div>
-                    <div>
-                      <span className="label">Premium ({pLabel})</span>
-                      <span className="value">{fmt6(s.premium)} {pLabel}</span>
-                    </div>
-                    <div>
-                      <span className="label">Delivery</span>
-                      <span className="value">{s.deliveryRate}%</span>
-                    </div>
-                    <div>
-                      <span className="label">Expiry</span>
-                      <span className="value">
-                        {new Date(Number(s.expiry) * 1000).toLocaleDateString()}
-                      </span>
-                    </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+                    <div><span className="text-[9px] text-dim uppercase tracking-widest block">Strike</span>{formatRate(s.strike, currencyMode)}</div>
+                    <div><span className="text-[9px] text-dim uppercase tracking-widest block">Notional</span>{fmt6(s.notional)} {cLabel}</div>
+                    <div><span className="text-[9px] text-dim uppercase tracking-widest block">Premium</span>{fmt6(s.premium)} {pLabel}</div>
+                    <div><span className="text-[9px] text-dim uppercase tracking-widest block">Delivery</span>{s.deliveryRate}%</div>
                   </div>
                 </div>
               );
             })}
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }

@@ -1,1 +1,62 @@
-/* Reset handled in App.css */
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0a0a0f;
+  --color-surface: #12121a;
+  --color-surface2: #1a1a28;
+  --color-border: #2a2a3d;
+  --color-dim: #6a6a80;
+  --color-accent: #f5a623;
+  --color-neon-green: #00ff41;
+  --color-cyan: #00e5ff;
+  --color-neon-pink: #ff0040;
+
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  --font-marker: "Permanent Marker", cursive;
+}
+
+/* ===== Base ===== */
+body {
+  background: var(--color-bg);
+  color: #e0e0e8;
+  font-family: var(--font-sans);
+}
+
+/* ===== Scanlines CRT overlay ===== */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  opacity: 0.4;
+}
+
+/* ===== Glow text utilities ===== */
+.glow-amber { text-shadow: 0 0 8px rgba(245, 166, 35, 0.6), 0 0 20px rgba(245, 166, 35, 0.3); }
+.glow-green { text-shadow: 0 0 8px rgba(0, 255, 65, 0.6), 0 0 20px rgba(0, 255, 65, 0.3); }
+.glow-cyan { text-shadow: 0 0 8px rgba(0, 229, 255, 0.6), 0 0 20px rgba(0, 229, 255, 0.3); }
+.glow-pink { text-shadow: 0 0 8px rgba(255, 0, 64, 0.6), 0 0 20px rgba(255, 0, 64, 0.3); }
+
+/* ===== Glow box ===== */
+.glass {
+  background: rgba(18, 18, 26, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(245, 166, 35, 0.15);
+  box-shadow: 0 0 30px rgba(245, 166, 35, 0.08), 0 0 60px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-dim); }

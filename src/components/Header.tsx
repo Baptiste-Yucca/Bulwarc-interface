@@ -1,80 +1,80 @@
 import type { Address } from "viem";
-import { formatRate, rateLabel, type CurrencyMode } from "../config/display";
 import { useLivePrice } from "../hooks/useLivePrice";
+import { rateLabel, type CurrencyMode } from "../config/display";
 
 interface Props {
   address: Address | null;
   connecting: boolean;
   onConnect: () => void;
   onDisconnect: () => void;
-  oraclePrice: bigint;
   currencyMode: CurrencyMode;
   onToggleCurrency: () => void;
 }
 
 export function Header({
-  address,
-  connecting,
-  onConnect,
-  onDisconnect,
-  oraclePrice,
-  currencyMode,
-  onToggleCurrency,
+  address, connecting, onConnect, onDisconnect,
+  currencyMode, onToggleCurrency,
 }: Props) {
   const live = useLivePrice();
-  const short = address
-    ? `${address.slice(0, 6)}...${address.slice(-4)}`
-    : null;
+  const short = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : null;
 
-  const liveDisplay =
-    currencyMode === "EUR/USD"
-      ? live.price.toFixed(4)
-      : live.price > 0
-        ? (1 / live.price).toFixed(4)
-        : "-.----";
+  const liveDisplay = currencyMode === "EUR/USD"
+    ? live.price.toFixed(4)
+    : live.price > 0 ? (1 / live.price).toFixed(4) : "-.----";
+
+  const dirColor = live.direction === "up" ? "text-neon-green" : live.direction === "down" ? "text-neon-pink" : "text-dim";
 
   return (
-    <header className="header">
-      <div className="header-left">
-        <h1>BulwArc</h1>
-        <span className="subtitle">FX Protection Protocol</span>
-      </div>
-      <div className="header-right">
-        {/* Live market price */}
-        {live.price > 0 && (
-          <span className={`live-price live-${live.direction}`}>
-            <span className="live-dot" />
-            {rateLabel(currencyMode)} {liveDisplay}
-            <span className="live-arrow">
-              {live.direction === "up" ? "▲" : live.direction === "down" ? "▼" : ""}
-            </span>
+    <header className="sticky top-0 z-50 border-b border-accent/15 bg-bg/90 backdrop-blur-md">
+      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        {/* Logo */}
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-bold text-accent glow-amber animate-flicker tracking-wider font-mono">
+            BULWARC
+          </h1>
+          <span className="hidden sm:inline text-[10px] text-dim uppercase tracking-[0.2em]">FX Shield Protocol</span>
+        </div>
+
+        {/* Live price */}
+        <button
+          onClick={onToggleCurrency}
+          className={`flex items-center gap-2 px-4 py-1.5 rounded-lg border font-mono text-sm transition-all cursor-pointer
+            ${live.testMode
+              ? "border-accent/40 bg-accent/5 text-accent"
+              : `border-neon-green/20 bg-neon-green/5 ${dirColor}`
+            }`}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse-dot" />
+          <span className="text-[9px] font-bold tracking-widest opacity-60">
+            {live.testMode ? "TEST" : "LIVE"}
           </span>
-        )}
+          <span className={live.testMode ? "" : dirColor === "text-neon-green" ? "glow-green" : ""}>
+            {rateLabel(currencyMode)} {live.price > 0 ? liveDisplay : "-.----"}
+          </span>
+          <span className="text-[10px]">
+            {live.direction === "up" ? "▲" : live.direction === "down" ? "▼" : ""}
+          </span>
+        </button>
 
-        {/* Oracle on-chain price */}
-        {oraclePrice > 0n && (
-          <button className="oracle-badge currency-toggle" onClick={onToggleCurrency}>
-            Oracle: {formatRate(oraclePrice, currencyMode)}
-            <span className="swap-icon">⇄</span>
-          </button>
-        )}
-
-        {address ? (
-          <div className="wallet-info">
-            <span className="address-badge">{short}</span>
-            <button className="btn btn-outline" onClick={onDisconnect}>
-              Disconnect
+        {/* Wallet */}
+        <div className="flex items-center gap-2">
+          {address ? (
+            <>
+              <span className="hidden sm:inline px-3 py-1.5 bg-surface border border-border rounded-lg text-xs font-mono text-dim">
+                {short}
+              </span>
+              <button onClick={onDisconnect}
+                className="px-3 py-1.5 text-xs border border-border rounded-lg text-dim hover:text-white hover:border-accent/30 transition-all cursor-pointer">
+                Disconnect
+              </button>
+            </>
+          ) : (
+            <button onClick={onConnect} disabled={connecting}
+              className="px-4 py-2 bg-accent hover:bg-accent/80 text-black text-sm font-bold rounded-lg transition-all disabled:opacity-50 cursor-pointer">
+              {connecting ? "Connecting..." : "Connect Wallet"}
             </button>
-          </div>
-        ) : (
-          <button
-            className="btn btn-primary"
-            onClick={onConnect}
-            disabled={connecting}
-          >
-            {connecting ? "Connecting..." : "Connect Wallet"}
-          </button>
-        )}
+          )}
+        </div>
       </div>
     </header>
   );
