@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { WalletClient } from "viem";
 import { parseUnits } from "viem";
-import { USDC_ADDRESS } from "../config/contracts";
+import { premiumToken, premiumLabel, collateralLabel } from "../config/contracts";
 import { useContractWrite } from "../hooks/useContractWrite";
 import { rateLabel, type CurrencyMode } from "../config/display";
 
@@ -16,27 +16,33 @@ export function CreateShield({ walletClient, currencyMode, onSuccess }: Props) {
   const [notional, setNotional] = useState("1000");
   const [premium, setPremium] = useState("5");
   const [days, setDays] = useState("30");
+  const [validator, setValidator] = useState("");
+  const [isReverse, setIsReverse] = useState(false);
   const [fundNow, setFundNow] = useState(true);
   const { exec, pending } = useContractWrite(walletClient);
 
+  const pLabel = premiumLabel(isReverse);
+  const cLabel = collateralLabel(isReverse);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Always convert to EUR/USD (contract format) before sending
     const inputRate = parseFloat(strike);
     const eurUsdRate = currencyMode === "EUR/USD" ? inputRate : 1 / inputRate;
     const strikeVal = BigInt(Math.round(eurUsdRate * 1e8));
     const notionalVal = parseUnits(notional, 6);
     const premiumVal = parseUnits(premium, 6);
     const expiryVal = BigInt(Math.floor(Date.now() / 1000) + parseInt(days) * 86400);
+    const validatorAddr = validator || "0x0000000000000000000000000000000000000000";
+
+    const args = [strikeVal, notionalVal, premiumVal, expiryVal, validatorAddr, isReverse];
 
     if (fundNow) {
-      await exec(
-        "createAndFundShield",
-        [strikeVal, notionalVal, premiumVal, expiryVal],
-        { token: USDC_ADDRESS, amount: premiumVal }
-      );
+      await exec("createAndFundShield", args, {
+        token: premiumToken(isReverse),
+        amount: premiumVal,
+      });
     } else {
-      await exec("createShield", [strikeVal, notionalVal, premiumVal, expiryVal]);
+      await exec("createShield", args);
     }
     onSuccess();
   };
@@ -44,6 +50,27 @@ export function CreateShield({ walletClient, currencyMode, onSuccess }: Props) {
   return (
     <div className="card">
       <h2>Create Shield</h2>
+
+      {/* Direction toggle */}
+      <div className="direction-toggle">
+        <button
+          type="button"
+          className={`direction-btn ${!isReverse ? "active" : ""}`}
+          onClick={() => setIsReverse(false)}
+        >
+          <span className="direction-icon">EUR → USD</span>
+          <span className="direction-desc">Protect EUR income (paid in USDC)</span>
+        </button>
+        <button
+          type="button"
+          className={`direction-btn ${isReverse ? "active" : ""}`}
+          onClick={() => setIsReverse(true)}
+        >
+          <span className="direction-icon">USD → EUR</span>
+          <span className="direction-desc">Protect USD value (paid in EURC)</span>
+        </button>
+      </div>
+
       <form onSubmit={handleSubmit} className="form">
         <div className="form-row">
           <label>
@@ -57,7 +84,7 @@ export function CreateShield({ walletClient, currencyMode, onSuccess }: Props) {
             />
           </label>
           <label>
-            Notional (USDC)
+            Notional ({cLabel})
             <input
               type="number"
               step="1"
@@ -69,7 +96,7 @@ export function CreateShield({ walletClient, currencyMode, onSuccess }: Props) {
         </div>
         <div className="form-row">
           <label>
-            Premium (USDC)
+            Premium ({pLabel})
             <input
               type="number"
               step="0.01"
@@ -89,13 +116,22 @@ export function CreateShield({ walletClient, currencyMode, onSuccess }: Props) {
             />
           </label>
         </div>
+        <label>
+          Validator address (employer / HR oracle — optional)
+          <input
+            type="text"
+            placeholder="0x... (leave empty for no validator)"
+            value={validator}
+            onChange={(e) => setValidator(e.target.value)}
+          />
+        </label>
         <label className="checkbox-label">
           <input
             type="checkbox"
             checked={fundNow}
             onChange={(e) => setFundNow(e.target.checked)}
           />
-          Fund premium now (requires USDC approval)
+          Fund premium now ({pLabel} approval required)
         </label>
         <button className="btn btn-primary" type="submit" disabled={pending || !walletClient}>
           {pending ? "Processing..." : fundNow ? "Create & Fund Shield" : "Create Shield"}

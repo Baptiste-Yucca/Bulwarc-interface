@@ -1,18 +1,41 @@
+baptiste@MacBook-Air-de-Baptiste bulwarc % jq '.abi' out/BulwArc.sol/BulwArc.json
 [
     {
         "type": "constructor",
         "inputs": [
-            { "name": "_usdc", "type": "address", "internalType": "address" },
-            { "name": "_eurc", "type": "address", "internalType": "address" },
-            { "name": "_oracle", "type": "address", "internalType": "address" },
-            { "name": "_feeBps", "type": "uint256", "internalType": "uint256" }
+            {
+                "name": "_usdc",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_eurc",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_oracle",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_feeBps",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
         ],
         "stateMutability": "nonpayable"
     },
     {
         "type": "function",
         "name": "cancel",
-        "inputs": [{ "name": "shieldId", "type": "uint256", "internalType": "uint256" }],
+        "inputs": [
+            {
+                "name": "shieldId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
         "outputs": [],
         "stateMutability": "nonpayable"
     },
@@ -20,10 +43,36 @@
         "type": "function",
         "name": "createAndFundShield",
         "inputs": [
-            { "name": "strike", "type": "uint256", "internalType": "uint256" },
-            { "name": "notional", "type": "uint256", "internalType": "uint256" },
-            { "name": "premium", "type": "uint256", "internalType": "uint256" },
-            { "name": "expiry", "type": "uint256", "internalType": "uint256" }
+            {
+                "name": "strike",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "notional",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "premium",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "expiry",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "validator",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "isReverse",
+                "type": "bool",
+                "internalType": "bool"
+            }
         ],
         "outputs": [],
         "stateMutability": "nonpayable"
@@ -32,10 +81,36 @@
         "type": "function",
         "name": "createShield",
         "inputs": [
-            { "name": "strike", "type": "uint256", "internalType": "uint256" },
-            { "name": "notional", "type": "uint256", "internalType": "uint256" },
-            { "name": "premium", "type": "uint256", "internalType": "uint256" },
-            { "name": "expiry", "type": "uint256", "internalType": "uint256" }
+            {
+                "name": "strike",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "notional",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "premium",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "expiry",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "validator",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "isReverse",
+                "type": "bool",
+                "internalType": "bool"
+            }
         ],
         "outputs": [],
         "stateMutability": "nonpayable"
@@ -49,10 +124,36 @@
                 "type": "tuple[]",
                 "internalType": "struct BulwArc.CreateParams[]",
                 "components": [
-                    { "name": "strike", "type": "uint256", "internalType": "uint256" },
-                    { "name": "notional", "type": "uint256", "internalType": "uint256" },
-                    { "name": "premium", "type": "uint256", "internalType": "uint256" },
-                    { "name": "expiry", "type": "uint256", "internalType": "uint256" }
+                    {
+                        "name": "strike",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "notional",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "premium",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "expiry",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "validator",
+                        "type": "address",
+                        "internalType": "address"
+                    },
+                    {
+                        "name": "isReverse",
+                        "type": "bool",
+                        "internalType": "bool"
+                    }
                 ]
             }
         ],
@@ -63,20 +164,38 @@
         "type": "function",
         "name": "eurc",
         "inputs": [],
-        "outputs": [{ "name": "", "type": "address", "internalType": "contract IERC20" }],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "contract IERC20"
+            }
+        ],
         "stateMutability": "view"
     },
     {
         "type": "function",
         "name": "exercise",
-        "inputs": [{ "name": "shieldId", "type": "uint256", "internalType": "uint256" }],
+        "inputs": [
+            {
+                "name": "shieldId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
         "outputs": [],
         "stateMutability": "nonpayable"
     },
     {
         "type": "function",
         "name": "expire",
-        "inputs": [{ "name": "shieldId", "type": "uint256", "internalType": "uint256" }],
+        "inputs": [
+            {
+                "name": "shieldId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
         "outputs": [],
         "stateMutability": "nonpayable"
     },
@@ -84,55 +203,115 @@
         "type": "function",
         "name": "feeBps",
         "inputs": [],
-        "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
         "stateMutability": "view"
     },
     {
         "type": "function",
         "name": "fills",
         "inputs": [
-            { "name": "", "type": "uint256", "internalType": "uint256" },
-            { "name": "", "type": "uint256", "internalType": "uint256" }
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
         ],
         "outputs": [
-            { "name": "guardian", "type": "address", "internalType": "address" },
-            { "name": "amount", "type": "uint256", "internalType": "uint256" }
+            {
+                "name": "guardian",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "amount",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
         ],
         "stateMutability": "view"
     },
     {
         "type": "function",
         "name": "fundShield",
-        "inputs": [{ "name": "shieldId", "type": "uint256", "internalType": "uint256" }],
+        "inputs": [
+            {
+                "name": "shieldId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
         "outputs": [],
         "stateMutability": "nonpayable"
     },
     {
         "type": "function",
         "name": "fundShieldBatch",
-        "inputs": [{ "name": "shieldIds", "type": "uint256[]", "internalType": "uint256[]" }],
+        "inputs": [
+            {
+                "name": "shieldIds",
+                "type": "uint256[]",
+                "internalType": "uint256[]"
+            }
+        ],
         "outputs": [],
         "stateMutability": "nonpayable"
     },
     {
         "type": "function",
         "name": "getFillCount",
-        "inputs": [{ "name": "shieldId", "type": "uint256", "internalType": "uint256" }],
-        "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+        "inputs": [
+            {
+                "name": "shieldId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
         "stateMutability": "view"
     },
     {
         "type": "function",
         "name": "getFills",
-        "inputs": [{ "name": "shieldId", "type": "uint256", "internalType": "uint256" }],
+        "inputs": [
+            {
+                "name": "shieldId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
         "outputs": [
             {
                 "name": "",
                 "type": "tuple[]",
                 "internalType": "struct BulwArc.Fill[]",
                 "components": [
-                    { "name": "guardian", "type": "address", "internalType": "address" },
-                    { "name": "amount", "type": "uint256", "internalType": "uint256" }
+                    {
+                        "name": "guardian",
+                        "type": "address",
+                        "internalType": "address"
+                    },
+                    {
+                        "name": "amount",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    }
                 ]
             }
         ],
@@ -141,21 +320,74 @@
     {
         "type": "function",
         "name": "getShield",
-        "inputs": [{ "name": "shieldId", "type": "uint256", "internalType": "uint256" }],
+        "inputs": [
+            {
+                "name": "shieldId",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
         "outputs": [
             {
                 "name": "",
                 "type": "tuple",
                 "internalType": "struct BulwArc.Shield",
                 "components": [
-                    { "name": "subscriber", "type": "address", "internalType": "address" },
-                    { "name": "strike", "type": "uint256", "internalType": "uint256" },
-                    { "name": "notional", "type": "uint256", "internalType": "uint256" },
-                    { "name": "premium", "type": "uint256", "internalType": "uint256" },
-                    { "name": "subscriberFee", "type": "uint256", "internalType": "uint256" },
-                    { "name": "filled", "type": "uint256", "internalType": "uint256" },
-                    { "name": "expiry", "type": "uint256", "internalType": "uint256" },
-                    { "name": "status", "type": "uint8", "internalType": "enum BulwArc.ShieldStatus" }
+                    {
+                        "name": "subscriber",
+                        "type": "address",
+                        "internalType": "address"
+                    },
+                    {
+                        "name": "strike",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "notional",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "premium",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "subscriberFee",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "filled",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "expiry",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "deliveryRate",
+                        "type": "uint8",
+                        "internalType": "uint8"
+                    },
+                    {
+                        "name": "validator",
+                        "type": "address",
+                        "internalType": "address"
+                    },
+                    {
+                        "name": "isReverse",
+                        "type": "bool",
+                        "internalType": "bool"
+                    },
+                    {
+                        "name": "status",
+                        "type": "uint8",
+                        "internalType": "enum BulwArc.ShieldStatus"
+                    }
                 ]
             }
         ],
@@ -165,16 +397,34 @@
         "type": "function",
         "name": "getShieldCount",
         "inputs": [],
-        "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
         "stateMutability": "view"
     },
     {
         "type": "function",
         "name": "matchShield",
         "inputs": [
-            { "name": "shieldId", "type": "uint256", "internalType": "uint256" },
-            { "name": "guardian", "type": "address", "internalType": "address" },
-            { "name": "amount", "type": "uint256", "internalType": "uint256" }
+            {
+                "name": "shieldId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "guardian",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "amount",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
         ],
         "outputs": [],
         "stateMutability": "nonpayable"
@@ -188,9 +438,21 @@
                 "type": "tuple[]",
                 "internalType": "struct BulwArc.MatchParams[]",
                 "components": [
-                    { "name": "shieldId", "type": "uint256", "internalType": "uint256" },
-                    { "name": "guardian", "type": "address", "internalType": "address" },
-                    { "name": "amount", "type": "uint256", "internalType": "uint256" }
+                    {
+                        "name": "shieldId",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "guardian",
+                        "type": "address",
+                        "internalType": "address"
+                    },
+                    {
+                        "name": "amount",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    }
                 ]
             }
         ],
@@ -201,36 +463,107 @@
         "type": "function",
         "name": "oracle",
         "inputs": [],
-        "outputs": [{ "name": "", "type": "address", "internalType": "contract IOracle" }],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "contract IOracle"
+            }
+        ],
         "stateMutability": "view"
     },
     {
         "type": "function",
         "name": "owner",
         "inputs": [],
-        "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
         "stateMutability": "view"
     },
     {
         "type": "function",
         "name": "setFeeBps",
-        "inputs": [{ "name": "_feeBps", "type": "uint256", "internalType": "uint256" }],
+        "inputs": [
+            {
+                "name": "_feeBps",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
         "outputs": [],
         "stateMutability": "nonpayable"
     },
     {
         "type": "function",
         "name": "shields",
-        "inputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+        "inputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
         "outputs": [
-            { "name": "subscriber", "type": "address", "internalType": "address" },
-            { "name": "strike", "type": "uint256", "internalType": "uint256" },
-            { "name": "notional", "type": "uint256", "internalType": "uint256" },
-            { "name": "premium", "type": "uint256", "internalType": "uint256" },
-            { "name": "subscriberFee", "type": "uint256", "internalType": "uint256" },
-            { "name": "filled", "type": "uint256", "internalType": "uint256" },
-            { "name": "expiry", "type": "uint256", "internalType": "uint256" },
-            { "name": "status", "type": "uint8", "internalType": "enum BulwArc.ShieldStatus" }
+            {
+                "name": "subscriber",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "strike",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "notional",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "premium",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "subscriberFee",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "filled",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "expiry",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "deliveryRate",
+                "type": "uint8",
+                "internalType": "uint8"
+            },
+            {
+                "name": "validator",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "isReverse",
+                "type": "bool",
+                "internalType": "bool"
+            },
+            {
+                "name": "status",
+                "type": "uint8",
+                "internalType": "enum BulwArc.ShieldStatus"
+            }
         ],
         "stateMutability": "view"
     },
@@ -238,27 +571,69 @@
         "type": "function",
         "name": "treasuryEURC",
         "inputs": [],
-        "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
         "stateMutability": "view"
     },
     {
         "type": "function",
         "name": "treasuryUSDC",
         "inputs": [],
-        "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
         "stateMutability": "view"
     },
     {
         "type": "function",
         "name": "usdc",
         "inputs": [],
-        "outputs": [{ "name": "", "type": "address", "internalType": "contract IERC20" }],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "contract IERC20"
+            }
+        ],
         "stateMutability": "view"
     },
     {
         "type": "function",
+        "name": "validateDelivery",
+        "inputs": [
+            {
+                "name": "shieldId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "rate",
+                "type": "uint8",
+                "internalType": "uint8"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
         "name": "withdrawTreasury",
-        "inputs": [{ "name": "to", "type": "address", "internalType": "address" }],
+        "inputs": [
+            {
+                "name": "to",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
         "outputs": [],
         "stateMutability": "nonpayable"
     },
@@ -266,12 +641,48 @@
         "type": "event",
         "name": "ShieldCreated",
         "inputs": [
-            { "name": "shieldId", "type": "uint256", "indexed": true, "internalType": "uint256" },
-            { "name": "subscriber", "type": "address", "indexed": true, "internalType": "address" },
-            { "name": "strike", "type": "uint256", "indexed": false, "internalType": "uint256" },
-            { "name": "notional", "type": "uint256", "indexed": false, "internalType": "uint256" },
-            { "name": "premium", "type": "uint256", "indexed": false, "internalType": "uint256" },
-            { "name": "expiry", "type": "uint256", "indexed": false, "internalType": "uint256" }
+            {
+                "name": "shieldId",
+                "type": "uint256",
+                "indexed": true,
+                "internalType": "uint256"
+            },
+            {
+                "name": "subscriber",
+                "type": "address",
+                "indexed": true,
+                "internalType": "address"
+            },
+            {
+                "name": "strike",
+                "type": "uint256",
+                "indexed": false,
+                "internalType": "uint256"
+            },
+            {
+                "name": "notional",
+                "type": "uint256",
+                "indexed": false,
+                "internalType": "uint256"
+            },
+            {
+                "name": "premium",
+                "type": "uint256",
+                "indexed": false,
+                "internalType": "uint256"
+            },
+            {
+                "name": "expiry",
+                "type": "uint256",
+                "indexed": false,
+                "internalType": "uint256"
+            },
+            {
+                "name": "isReverse",
+                "type": "bool",
+                "indexed": false,
+                "internalType": "bool"
+            }
         ],
         "anonymous": false
     },
@@ -279,8 +690,18 @@
         "type": "event",
         "name": "ShieldExercised",
         "inputs": [
-            { "name": "shieldId", "type": "uint256", "indexed": true, "internalType": "uint256" },
-            { "name": "payoff", "type": "uint256", "indexed": false, "internalType": "uint256" }
+            {
+                "name": "shieldId",
+                "type": "uint256",
+                "indexed": true,
+                "internalType": "uint256"
+            },
+            {
+                "name": "payoff",
+                "type": "uint256",
+                "indexed": false,
+                "internalType": "uint256"
+            }
         ],
         "anonymous": false
     },
@@ -288,7 +709,12 @@
         "type": "event",
         "name": "ShieldExpired",
         "inputs": [
-            { "name": "shieldId", "type": "uint256", "indexed": true, "internalType": "uint256" }
+            {
+                "name": "shieldId",
+                "type": "uint256",
+                "indexed": true,
+                "internalType": "uint256"
+            }
         ],
         "anonymous": false
     },
@@ -296,9 +722,24 @@
         "type": "event",
         "name": "ShieldFilled",
         "inputs": [
-            { "name": "shieldId", "type": "uint256", "indexed": true, "internalType": "uint256" },
-            { "name": "guardian", "type": "address", "indexed": true, "internalType": "address" },
-            { "name": "amount", "type": "uint256", "indexed": false, "internalType": "uint256" }
+            {
+                "name": "shieldId",
+                "type": "uint256",
+                "indexed": true,
+                "internalType": "uint256"
+            },
+            {
+                "name": "guardian",
+                "type": "address",
+                "indexed": true,
+                "internalType": "address"
+            },
+            {
+                "name": "amount",
+                "type": "uint256",
+                "indexed": false,
+                "internalType": "uint256"
+            }
         ],
         "anonymous": false
     },
@@ -306,8 +747,18 @@
         "type": "event",
         "name": "ShieldFunded",
         "inputs": [
-            { "name": "shieldId", "type": "uint256", "indexed": true, "internalType": "uint256" },
-            { "name": "funder", "type": "address", "indexed": true, "internalType": "address" }
+            {
+                "name": "shieldId",
+                "type": "uint256",
+                "indexed": true,
+                "internalType": "uint256"
+            },
+            {
+                "name": "funder",
+                "type": "address",
+                "indexed": true,
+                "internalType": "address"
+            }
         ],
         "anonymous": false
     },
@@ -315,7 +766,12 @@
         "type": "event",
         "name": "ShieldLocked",
         "inputs": [
-            { "name": "shieldId", "type": "uint256", "indexed": true, "internalType": "uint256" }
+            {
+                "name": "shieldId",
+                "type": "uint256",
+                "indexed": true,
+                "internalType": "uint256"
+            }
         ],
         "anonymous": false
     }

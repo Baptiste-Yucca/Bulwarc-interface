@@ -8,6 +8,8 @@
     "start": "tsx src/index.ts"
   },
   "dependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "better-sqlite3": "^12.8.0",
     "dotenv": "^17.4.0",
     "viem": "^2.47.10"
   },

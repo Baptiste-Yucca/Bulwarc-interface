@@ -11,9 +11,62 @@ export const arcTestnet = defineChain({
   },
 });
 
-export const BULWARC_ADDRESS = (process.env.BULWARC_ADDRESS || "0xb252aaf5Cd1D4827844F777293EB6eaEe0063E3a") as Address;
+export const BULWARC_ADDRESS = (process.env.BULWARC_ADDRESS || "0xA23B7bdf94717Ae9A0d0C468Ad84fDD0D485ea1d") as Address;
+export const ORACLE_ADDRESS = (process.env.ORACLE_ADDRESS || "0x3462614cd401DD667B3A30D1c7E8b731DCE7E003") as Address;
 
-export const BULWARC_EVENTS = [
+export const PORT = parseInt(process.env.PORT || "3001");
+
+export const BULWARC_ABI = [
+  // --- Read ---
+  {
+    type: "function",
+    name: "getShield",
+    inputs: [{ name: "shieldId", type: "uint256" }],
+    outputs: [
+      {
+        name: "",
+        type: "tuple",
+        components: [
+          { name: "subscriber", type: "address" },
+          { name: "strike", type: "uint256" },
+          { name: "notional", type: "uint256" },
+          { name: "premium", type: "uint256" },
+          { name: "subscriberFee", type: "uint256" },
+          { name: "filled", type: "uint256" },
+          { name: "expiry", type: "uint256" },
+          { name: "deliveryRate", type: "uint8" },
+          { name: "validator", type: "address" },
+          { name: "isReverse", type: "bool" },
+          { name: "status", type: "uint8" },
+        ],
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getShieldCount",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getFills",
+    inputs: [{ name: "shieldId", type: "uint256" }],
+    outputs: [
+      {
+        name: "",
+        type: "tuple[]",
+        components: [
+          { name: "guardian", type: "address" },
+          { name: "amount", type: "uint256" },
+        ],
+      },
+    ],
+    stateMutability: "view",
+  },
+  // --- Events ---
   {
     type: "event",
     name: "ShieldCreated",
@@ -24,6 +77,7 @@ export const BULWARC_EVENTS = [
       { name: "notional", type: "uint256", indexed: false },
       { name: "premium", type: "uint256", indexed: false },
       { name: "expiry", type: "uint256", indexed: false },
+      { name: "isReverse", type: "bool", indexed: false },
     ],
   },
   {
@@ -46,9 +100,7 @@ export const BULWARC_EVENTS = [
   {
     type: "event",
     name: "ShieldLocked",
-    inputs: [
-      { name: "shieldId", type: "uint256", indexed: true },
-    ],
+    inputs: [{ name: "shieldId", type: "uint256", indexed: true }],
   },
   {
     type: "event",
@@ -61,8 +113,19 @@ export const BULWARC_EVENTS = [
   {
     type: "event",
     name: "ShieldExpired",
-    inputs: [
-      { name: "shieldId", type: "uint256", indexed: true },
+    inputs: [{ name: "shieldId", type: "uint256", indexed: true }],
+  },
+] as const;
+
+export const ORACLE_ABI = [
+  {
+    type: "function",
+    name: "getPrice",
+    inputs: [],
+    outputs: [
+      { name: "price", type: "int256" },
+      { name: "updatedAt", type: "uint256" },
     ],
+    stateMutability: "view",
   },
 ] as const;

@@ -36,5 +36,10 @@ pnpm-debug.log*
 .cache/
 .eslint.cache
 
+# Database
+*.db
+*.db-wal
+*.db-shm
+
 # Misc
 tmp/
