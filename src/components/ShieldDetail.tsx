@@ -18,6 +18,7 @@ interface Props {
   txCallbacks?: TxCallbacks;
   onSuccess: () => void;
   onClose: () => void;
+  onViewFlow?: (id: number) => void;
 }
 
 const fmt6 = (v: bigint) => (Number(v) / 1e6).toFixed(2);
@@ -31,7 +32,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export function ShieldDetail({ shield, walletClient, address, oraclePrice, currencyMode, txCallbacks, onSuccess, onClose }: Props) {
+export function ShieldDetail({ shield, walletClient, address, oraclePrice, currencyMode, txCallbacks, onSuccess, onClose, onViewFlow }: Props) {
   const [fills, setFills] = useState<Fill[]>([]);
   const [matchAmount, setMatchAmount] = useState("");
   const [deliveryInput, setDeliveryInput] = useState("100");
@@ -73,13 +74,21 @@ export function ShieldDetail({ shield, walletClient, address, oraclePrice, curre
           <button onClick={onClose} className="text-dim hover:text-white text-xl leading-none cursor-pointer">&times;</button>
         </div>
 
-        {/* Tx link */}
-        {s.createdEvent && (
-          <a href={`${ARCSCAN_TX}${s.createdEvent.txHash}`} target="_blank" rel="noopener noreferrer"
-            className="inline-block mb-4 text-xs text-accent hover:underline font-mono">
-            View on ArcScan &rarr;
-          </a>
-        )}
+        {/* Links */}
+        <div className="flex items-center gap-3 mb-4">
+          {s.createdEvent && (
+            <a href={`${ARCSCAN_TX}${s.createdEvent.txHash}`} target="_blank" rel="noopener noreferrer"
+              className="text-xs text-accent hover:underline font-mono">
+              View on ArcScan &rarr;
+            </a>
+          )}
+          {(s.status === 3 || s.status === 4) && onViewFlow && (
+            <button onClick={() => onViewFlow(s.id)}
+              className="text-xs text-neon-green hover:underline font-mono cursor-pointer glow-green">
+              View Call Flow &rarr;
+            </button>
+          )}
+        </div>
 
         {/* Fields */}
         <div className="grid grid-cols-2 gap-3 mb-4">

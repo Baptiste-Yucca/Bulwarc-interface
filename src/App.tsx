@@ -10,12 +10,13 @@ import { MySalary } from "./components/MySalary";
 import { MyShields } from "./components/MyShields";
 import { FilterModal, DEFAULT_FILTERS, type Filters } from "./components/FilterModal";
 import { Billing } from "./components/Billing";
+import { CallFlow } from "./components/CallFlow";
 import { TxToasts } from "./components/TxToasts";
 import type { CurrencyMode } from "./config/display";
 import type { TxCallbacks } from "./hooks/useContractWrite";
 import "./App.css";
 
-type Modal = "none" | "detail" | "create" | "my-shields" | "my-salary" | "billing" | "filters";
+type Modal = "none" | "detail" | "create" | "my-shields" | "my-salary" | "billing" | "filters" | "callflow";
 
 function App() {
   const { address, walletClient, connect, disconnect, connecting } = useWallet();
@@ -154,6 +155,7 @@ function App() {
           txCallbacks={txCallbacks}
           onSuccess={() => { refresh(); closeModal(); }}
           onClose={closeModal}
+          onViewFlow={(id) => { setSelectedId(id); setModal("callflow"); }}
         />
       )}
 
@@ -181,6 +183,14 @@ function App() {
         <MySalary
           shields={mySalaryShields}
           loading={loading}
+          currencyMode={currencyMode}
+          onClose={closeModal}
+        />
+      )}
+
+      {modal === "callflow" && selectedShield && (
+        <CallFlow
+          shield={selectedShield}
           currencyMode={currencyMode}
           onClose={closeModal}
         />
