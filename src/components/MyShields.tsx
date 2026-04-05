@@ -29,10 +29,10 @@ function statusInfo(s: Shield): { label: string; color: string; detail: string }
     case 0: return { label: "CREATED", color: "text-dim", detail: "Awaiting premium funding" };
     case 1: return { label: "PENDING", color: "text-accent", detail: `${fillPct}% covered (${fmt6(s.filled)}/${fmt6(s.notional)} ${cLabel})` };
     case 2: return { label: "LOCKED", color: "text-cyan glow-cyan", detail: "Fully covered, awaiting settlement" };
-    case 3: return { label: "EXERCISED", color: "text-neon-green glow-green", detail: `Settled at strike — ${s.deliveryRate}% delivery` };
+    case 3: return { label: "SETTLED", color: "text-neon-green glow-green", detail: `Settled — ${s.deliveryRate}% delivery` };
     case 4: {
       const wasFull = s.filled === s.notional;
-      return { label: "EXPIRED", color: "text-dim", detail: wasFull ? "Expired fully covered" : `Expired ${fillPct}% covered` };
+      return { label: "SETTLED", color: "text-dim", detail: wasFull ? "Settled, fully covered" : `Settled, ${fillPct}% covered` };
     }
     default: return { label: "UNKNOWN", color: "text-dim", detail: "" };
   }

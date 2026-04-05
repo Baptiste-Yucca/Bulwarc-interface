@@ -15,8 +15,7 @@ export function Billing({ shields, currencyMode, onClose }: Props) {
   // Exclude CREATED (status 0) — only funded shields are billable
   const billable = shields.filter((s) => s.status >= 1);
 
-  const exercised = billable.filter((s) => s.status === 3);
-  const expired = billable.filter((s) => s.status === 4);
+  const settled = billable.filter((s) => s.status === 3 || s.status === 4);
   const active = billable.filter((s) => s.status >= 1 && s.status <= 2);
 
   // Totals — group by direction since tokens differ
@@ -42,8 +41,7 @@ export function Billing({ shields, currencyMode, onClose }: Props) {
           <>
             {/* Summary cards */}
             <div className="grid grid-cols-3 gap-3 mb-5">
-              <SummaryCard label="Exercised" count={exercised.length} color="text-neon-green" />
-              <SummaryCard label="Expired" count={expired.length} color="text-dim" />
+              <SummaryCard label="Settled" count={settled.length} color="text-neon-green" />
               <SummaryCard label="Active" count={active.length} color="text-cyan" />
             </div>
 
@@ -97,9 +95,9 @@ function BillingRow({ shield, currencyMode }: { shield: Shield; currencyMode: Cu
   const pLabel = premiumLabel(s.isReverse);
 
   const statusTag = s.status === 3
-    ? { label: "EXERCISED", cls: "bg-neon-green/15 text-neon-green" }
+    ? { label: "SETTLED", cls: "bg-neon-green/15 text-neon-green" }
     : s.status === 4
-      ? { label: "EXPIRED", cls: "bg-dim/15 text-dim" }
+      ? { label: "SETTLED", cls: "bg-dim/15 text-dim" }
       : s.status === 2
         ? { label: "LOCKED", cls: "bg-cyan/15 text-cyan" }
         : { label: "PENDING", cls: "bg-accent/15 text-accent" };

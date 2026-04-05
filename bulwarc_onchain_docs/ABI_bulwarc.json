@@ -41,44 +41,6 @@ baptiste@MacBook-Air-de-Baptiste bulwarc % jq '.abi' out/BulwArc.sol/BulwArc.jso
     },
     {
         "type": "function",
-        "name": "createAndFundShield",
-        "inputs": [
-            {
-                "name": "strike",
-                "type": "uint256",
-                "internalType": "uint256"
-            },
-            {
-                "name": "notional",
-                "type": "uint256",
-                "internalType": "uint256"
-            },
-            {
-                "name": "premium",
-                "type": "uint256",
-                "internalType": "uint256"
-            },
-            {
-                "name": "expiry",
-                "type": "uint256",
-                "internalType": "uint256"
-            },
-            {
-                "name": "validator",
-                "type": "address",
-                "internalType": "address"
-            },
-            {
-                "name": "isReverse",
-                "type": "bool",
-                "internalType": "bool"
-            }
-        ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-    },
-    {
-        "type": "function",
         "name": "createShield",
         "inputs": [
             {
@@ -172,32 +134,6 @@ baptiste@MacBook-Air-de-Baptiste bulwarc % jq '.abi' out/BulwArc.sol/BulwArc.jso
             }
         ],
         "stateMutability": "view"
-    },
-    {
-        "type": "function",
-        "name": "exercise",
-        "inputs": [
-            {
-                "name": "shieldId",
-                "type": "uint256",
-                "internalType": "uint256"
-            }
-        ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-    },
-    {
-        "type": "function",
-        "name": "expire",
-        "inputs": [
-            {
-                "name": "shieldId",
-                "type": "uint256",
-                "internalType": "uint256"
-            }
-        ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
     },
     {
         "type": "function",
@@ -431,36 +367,6 @@ baptiste@MacBook-Air-de-Baptiste bulwarc % jq '.abi' out/BulwArc.sol/BulwArc.jso
     },
     {
         "type": "function",
-        "name": "matchShieldBatch",
-        "inputs": [
-            {
-                "name": "params",
-                "type": "tuple[]",
-                "internalType": "struct BulwArc.MatchParams[]",
-                "components": [
-                    {
-                        "name": "shieldId",
-                        "type": "uint256",
-                        "internalType": "uint256"
-                    },
-                    {
-                        "name": "guardian",
-                        "type": "address",
-                        "internalType": "address"
-                    },
-                    {
-                        "name": "amount",
-                        "type": "uint256",
-                        "internalType": "uint256"
-                    }
-                ]
-            }
-        ],
-        "outputs": [],
-        "stateMutability": "nonpayable"
-    },
-    {
-        "type": "function",
         "name": "oracle",
         "inputs": [],
         "outputs": [
@@ -491,6 +397,19 @@ baptiste@MacBook-Air-de-Baptiste bulwarc % jq '.abi' out/BulwArc.sol/BulwArc.jso
         "inputs": [
             {
                 "name": "_feeBps",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "settle",
+        "inputs": [
+            {
+                "name": "shieldId",
                 "type": "uint256",
                 "internalType": "uint256"
             }
@@ -688,38 +607,6 @@ baptiste@MacBook-Air-de-Baptiste bulwarc % jq '.abi' out/BulwArc.sol/BulwArc.jso
     },
     {
         "type": "event",
-        "name": "ShieldExercised",
-        "inputs": [
-            {
-                "name": "shieldId",
-                "type": "uint256",
-                "indexed": true,
-                "internalType": "uint256"
-            },
-            {
-                "name": "payoff",
-                "type": "uint256",
-                "indexed": false,
-                "internalType": "uint256"
-            }
-        ],
-        "anonymous": false
-    },
-    {
-        "type": "event",
-        "name": "ShieldExpired",
-        "inputs": [
-            {
-                "name": "shieldId",
-                "type": "uint256",
-                "indexed": true,
-                "internalType": "uint256"
-            }
-        ],
-        "anonymous": false
-    },
-    {
-        "type": "event",
         "name": "ShieldFilled",
         "inputs": [
             {
@@ -770,6 +657,31 @@ baptiste@MacBook-Air-de-Baptiste bulwarc % jq '.abi' out/BulwArc.sol/BulwArc.jso
                 "name": "shieldId",
                 "type": "uint256",
                 "indexed": true,
+                "internalType": "uint256"
+            }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "ShieldSettled",
+        "inputs": [
+            {
+                "name": "shieldId",
+                "type": "uint256",
+                "indexed": true,
+                "internalType": "uint256"
+            },
+            {
+                "name": "inTheMoney",
+                "type": "bool",
+                "indexed": false,
+                "internalType": "bool"
+            },
+            {
+                "name": "payoff",
+                "type": "uint256",
+                "indexed": false,
                 "internalType": "uint256"
             }
         ],

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { WalletClient } from "viem";
 import { parseUnits } from "viem";
-import { premiumToken, premiumLabel, collateralLabel } from "../config/contracts";
+import { premiumLabel, collateralLabel } from "../config/contracts";
 import { useContractWrite, type TxCallbacks } from "../hooks/useContractWrite";
 import { rateLabel, type CurrencyMode } from "../config/display";
 
@@ -20,7 +20,6 @@ export function CreateShield({ walletClient, currencyMode, txCallbacks, onSucces
   const [days, setDays] = useState("30");
   const [validator, setValidator] = useState("");
   const [isReverse, setIsReverse] = useState(false);
-  const [fundNow, setFundNow] = useState(true);
   const { exec, pending } = useContractWrite(walletClient, txCallbacks);
 
   const pLabel = premiumLabel(isReverse);
@@ -37,11 +36,7 @@ export function CreateShield({ walletClient, currencyMode, txCallbacks, onSucces
     const validatorAddr = validator || "0x0000000000000000000000000000000000000000";
     const args = [strikeVal, notionalVal, premiumVal, expiryVal, validatorAddr, isReverse];
 
-    if (fundNow) {
-      await exec("createAndFundShield", args, { token: premiumToken(isReverse), amount: premiumVal });
-    } else {
-      await exec("createShield", args);
-    }
+    await exec("createShield", args);
     onSuccess();
   };
 
@@ -101,13 +96,12 @@ export function CreateShield({ walletClient, currencyMode, txCallbacks, onSucces
             <input type="text" placeholder="0x..." value={validator} onChange={(e) => setValidator(e.target.value)}
               className="px-3 py-2 bg-bg border border-border rounded-lg text-sm text-white font-mono focus:border-accent focus:outline-none" />
           </label>
-          <label className="flex items-center gap-2 text-xs text-white cursor-pointer font-mono">
-            <input type="checkbox" checked={fundNow} onChange={(e) => setFundNow(e.target.checked)} className="accent-accent" />
-            Fund premium now ({pLabel})
-          </label>
+          <div className="text-[10px] text-dim font-mono">
+            The employer will fund the premium via fundShield() after creation.
+          </div>
           <button type="submit" disabled={pending || !walletClient}
             className="px-5 py-2.5 bg-accent hover:bg-accent/80 text-black text-sm font-bold rounded-lg transition-all disabled:opacity-50 cursor-pointer">
-            {pending ? "Processing..." : fundNow ? "Create & Fund Shield" : "Create Shield"}
+            {pending ? "Processing..." : "Create Shield"}
           </button>
         </form>
       </div>
