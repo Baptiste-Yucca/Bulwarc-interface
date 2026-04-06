@@ -210,13 +210,23 @@ export function CallFlow({ shield, currencyMode, onClose }: Props) {
               time={settledEv ? fmtTs(settledEv.block_timestamp) : undefined}
               txHash={settledEv?.tx_hash}>
               <div className="text-[10px] text-dim mb-1">
-                Oracle &lt; strike → USD weakened vs EUR. Worker receives compensation.
+                Oracle &lt; strike → USD weakened vs EUR. Worker receives FX compensation.
               </div>
               {payoff > 0n && (
-                <TokenFlow from="Escrow" to="Worker" amount={fmt6(payoff)} token={cLabel} color="text-neon-green" />
+                <>
+                  <TokenFlow from="Escrow" to="Worker" amount={fmt6(payoff)} token={cLabel} color="text-neon-green" />
+                  <div className="text-[10px] text-dim mt-0.5 ml-8">FX payoff (scaled by {deliveryPct}% delivery)</div>
+                </>
               )}
               {s.filled - payoff > 0n && (
                 <TokenFlow from="Escrow" to="Guardians" amount={fmt6(s.filled - payoff)} token={cLabel} color={cColor} />
+              )}
+              {/* Guardian salary share for delivered work */}
+              {deliveryPct > 0 && (
+                <>
+                  <TokenFlow from="Escrow" to="Guardians" amount={fmt6(s.notional * BigInt(deliveryPct) / 100n)} token={pLabel} color={pColor} />
+                  <div className="text-[10px] text-dim mt-0.5 ml-8">Salary share ({deliveryPct}% delivered)</div>
+                </>
               )}
               {feeRefund > 0n && (
                 <TokenFlow from="Protocol" to="Worker" amount={fmt6(feeRefund)} token={pLabel} color="text-accent" />
@@ -229,13 +239,14 @@ export function CallFlow({ shield, currencyMode, onClose }: Props) {
               time={settledEv ? fmtTs(settledEv.block_timestamp) : undefined}
               txHash={settledEv?.tx_hash}>
               <div className="text-[10px] text-dim mb-1">
-                Oracle ≥ strike → USD stable or stronger. No protection needed.
+                Oracle ≥ strike → USD stable or stronger. No FX protection triggered.
               </div>
+              <TokenFlow from="Escrow" to="Worker" amount={fmt6(s.notional)} token={pLabel} color="text-neon-green" />
+              <div className="text-[10px] text-dim mt-0.5 ml-8">Worker gets salary back (no FX loss)</div>
               {s.filled > 0n && (
                 <TokenFlow from="Escrow" to="Guardians" amount={fmt6(s.filled)} token={cLabel} color={cColor} />
               )}
-              <TokenFlow from="Escrow" to="Worker" amount={fmt6(s.notional)} token={pLabel} color={pColor} />
-              <div className="text-[10px] text-dim mt-0.5">Guardians keep the premium earned at match time</div>
+              <div className="text-[10px] text-dim mt-0.5 ml-8">Guardians get collateral back + keep premium earned at match</div>
               {feeRefund > 0n && (
                 <TokenFlow from="Protocol" to="Worker" amount={fmt6(feeRefund)} token={pLabel} color="text-accent" />
               )}
@@ -260,8 +271,12 @@ export function CallFlow({ shield, currencyMode, onClose }: Props) {
               <SummaryRow
                 party="Worker"
                 paid="-"
-                received={isHit && payoff > 0n ? `${fmt6(payoff)} ${cLabel}` : "-"}
-                extra={feeRefund > 0n ? `+${fmt6(feeRefund)} ${pLabel} refund` : undefined}
+                received={
+                  isHit
+                    ? payoff > 0n ? `${fmt6(payoff)} ${cLabel}` : "-"
+                    : `${fmt6(s.notional)} ${pLabel} (salary back)`
+                }
+                extra={feeRefund > 0n ? `+${fmt6(feeRefund)} ${pLabel} fee refund` : undefined}
                 color="text-neon-green"
               />
               {/* Employer */}
@@ -285,7 +300,7 @@ export function CallFlow({ shield, currencyMode, onClose }: Props) {
               <SummaryRow
                 party="Protocol"
                 paid="-"
-                received={`${fmt6(protocolPremiumFee)} ${pLabel} fees`}
+                received={protocolPremiumFee > 0n ? `${fmt6(protocolPremiumFee)} ${pLabel} fees` : "Fees refunded"}
                 color="text-accent"
               />
             </div>
