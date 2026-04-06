@@ -1,56 +1,29 @@
 services:
-  bulwarc-backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: bulwarc-backend
-    volumes:
-      - ./data:/app/data
-    environment:
-      - NODE_ENV=production
-      - DB_PATH=/app/data/bulwarc.db
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3001/shields"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=traefik_default"
-
-      # API route: bulwarc.battistu.com/api/* -> backend:3001
-      - "traefik.http.routers.bulwarc-api-http.rule=Host(`bulwarc.battistu.com`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.bulwarc-api-http.entrypoints=web"
-      - "traefik.http.routers.bulwarc-api-http.middlewares=redirect-to-https@file"
-
-      - "traefik.http.routers.bulwarc-api.rule=Host(`bulwarc.battistu.com`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.bulwarc-api.entrypoints=websecure"
-      - "traefik.http.routers.bulwarc-api.tls.certresolver=letsencrypt"
-
-      # Strip /api prefix before forwarding to backend
-      - "traefik.http.routers.bulwarc-api.middlewares=bulwarc-strip-api"
-      - "traefik.http.middlewares.bulwarc-strip-api.stripprefix.prefixes=/api"
-
-      - "traefik.http.services.bulwarc-api.loadbalancer.server.port=3001"
-    networks:
-      - traefik
-      - internal
-
-  bulwarc-frontend:
+  bulwarc:
     build:
       context: .
       dockerfile: Dockerfile
       args:
         - VITE_API_URL=/api
-        - VITE_BULWARC_ADDRESS=0xA23B7bdf94717Ae9A0d0C468Ad84fDD0D485ea1d
-        - VITE_ORACLE_ADDRESS=0x3462614cd401DD667B3A30D1c7E8b731DCE7E003
-    container_name: bulwarc-frontend
-    depends_on:
-      - bulwarc-backend
+        - VITE_BULWARC_ADDRESS=${VITE_BULWARC_ADDRESS:-0xA23B7bdf94717Ae9A0d0C468Ad84fDD0D485ea1d}
+        - VITE_ORACLE_ADDRESS=${VITE_ORACLE_ADDRESS:-0x3462614cd401DD667B3A30D1c7E8b731DCE7E003}
+        - VITE_RPC_URL=${VITE_RPC_URL:-https://rpc.testnet.arc.network}
+        - VITE_CHAIN_ID=${VITE_CHAIN_ID:-5042002}
+    container_name: bulwarc
+    volumes:
+      - ./data:/app/backend/data
+    environment:
+      - NODE_ENV=production
+      - BULWARC_ADDRESS=${VITE_BULWARC_ADDRESS:-0xA23B7bdf94717Ae9A0d0C468Ad84fDD0D485ea1d}
+      - ORACLE_ADDRESS=${VITE_ORACLE_ADDRESS:-0x3462614cd401DD667B3A30D1c7E8b731DCE7E003}
+      - RPC_URL=${VITE_RPC_URL:-https://rpc.testnet.arc.network}
+      - PORT=3001
+      - DEPLOY_BLOCK=${DEPLOY_BLOCK:-35509000}
+      - AI_AGENT_PRIVATE_KEY=${AI_AGENT_PRIVATE_KEY}
+      - DB_PATH=/app/backend/data/bulwarc.db
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:80/ || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/shields && curl -sf http://localhost:80/ || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -68,16 +41,12 @@ services:
       - "traefik.http.routers.bulwarc.entrypoints=websecure"
       - "traefik.http.routers.bulwarc.tls.certresolver=letsencrypt"
 
-      # internal service
+      # Nginx serves both SPA (:80) and proxies /api to backend (:3001)
       - "traefik.http.services.bulwarc.loadbalancer.server.port=80"
     networks:
       - traefik
-      - internal
 
 networks:
   traefik:
     external: true
     name: traefik_default
-
-  internal:
-    driver: bridge
