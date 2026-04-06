@@ -23,7 +23,7 @@ services:
       - DB_PATH=/app/backend/data/bulwarc.db
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/shields && curl -sf http://localhost:80/ || exit 1"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/shields"]
       interval: 30s
       timeout: 5s
       retries: 3
