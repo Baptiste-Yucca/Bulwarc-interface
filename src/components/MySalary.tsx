@@ -20,14 +20,14 @@ export function MySalary({ shields, loading, currencyMode, onClose }: Props) {
           <h2 className="text-lg font-bold text-neon-green glow-green font-mono">My Salary</h2>
           <button onClick={onClose} className="text-dim hover:text-white text-xl leading-none cursor-pointer">&times;</button>
         </div>
-        <p className="text-xs text-dim mb-4 font-mono">Exercised shields — your FX protection payslips.</p>
+        <p className="text-xs text-dim mb-4 font-mono">Settled shields — your FX protection payslips.</p>
 
         {loading ? (
           <div className="py-10 text-center text-dim text-sm font-mono animate-pulse">Loading...</div>
         ) : shields.length === 0 ? (
           <div className="py-10 text-center">
-            <div className="text-dim text-sm font-mono">No exercised shields yet.</div>
-            <div className="text-dim/50 text-xs mt-2">Exercise a shield to see it here.</div>
+            <div className="text-dim text-sm font-mono">No settled shields yet.</div>
+            <div className="text-dim/50 text-xs mt-2">Settled shields will appear here as payslip records.</div>
           </div>
         ) : (
           <div className="space-y-3">

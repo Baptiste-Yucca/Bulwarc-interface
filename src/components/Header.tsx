@@ -9,11 +9,12 @@ interface Props {
   onDisconnect: () => void;
   currencyMode: CurrencyMode;
   onToggleCurrency: () => void;
+  onOpenTreasury: () => void;
 }
 
 export function Header({
   address, connecting, onConnect, onDisconnect,
-  currencyMode, onToggleCurrency,
+  currencyMode, onToggleCurrency, onOpenTreasury,
 }: Props) {
   const live = useLivePrice();
   const short = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : null;
@@ -56,8 +57,14 @@ export function Header({
           </span>
         </button>
 
-        {/* Wallet */}
+        {/* Treasury + Wallet */}
         <div className="flex items-center gap-2">
+          <button onClick={onOpenTreasury} title="Protocol Treasury"
+            className="p-2 rounded-lg border border-accent/20 text-accent hover:bg-accent/10 transition-all cursor-pointer">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+          </button>
           {address ? (
             <>
               <span className="hidden sm:inline px-3 py-1.5 bg-surface border border-border rounded-lg text-xs font-mono text-dim">

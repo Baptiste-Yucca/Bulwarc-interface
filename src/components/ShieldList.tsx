@@ -18,10 +18,9 @@ const statusColor: Record<string, string> = {
   created: "bg-slate-500/15 text-slate-400",
   pending: "bg-amber-500/15 text-amber-400",
   locked: "bg-blue-500/15 text-blue-400",
-  exercised: "bg-emerald-500/15 text-emerald-400",
-  expired: "bg-gray-500/15 text-gray-400",
+  settled: "bg-emerald-500/15 text-emerald-400",
 };
-const statusClass = (s: number) => ["created","pending","locked","exercised","expired"][s] ?? "created";
+const statusClass = (s: number) => ["created","pending","locked","settled","settled"][s] ?? "created";
 
 export function ShieldList({ shields, loading, selectedId, onSelect, currencyMode, emptyMessage }: Props) {
   if (loading) return <div className="bg-surface border border-border rounded-xl p-8 text-center text-dim">Loading shields...</div>;

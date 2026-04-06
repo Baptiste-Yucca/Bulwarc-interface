@@ -105,16 +105,12 @@ export const BULWARC_ABI = [
   },
   {
     type: "event",
-    name: "ShieldExercised",
+    name: "ShieldSettled",
     inputs: [
       { name: "shieldId", type: "uint256", indexed: true },
+      { name: "inTheMoney", type: "bool", indexed: false },
       { name: "payoff", type: "uint256", indexed: false },
     ],
-  },
-  {
-    type: "event",
-    name: "ShieldExpired",
-    inputs: [{ name: "shieldId", type: "uint256", indexed: true }],
   },
 ] as const;
 

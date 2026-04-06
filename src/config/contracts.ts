@@ -11,17 +11,14 @@ export const EURC_ADDRESS = "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a" as Addr
 export function premiumToken(isReverse: boolean): Address {
   return isReverse ? EURC_ADDRESS : USDC_ADDRESS;
 }
-
 /** Returns the collateral token for a shield direction */
 export function collateralToken(isReverse: boolean): Address {
   return isReverse ? USDC_ADDRESS : EURC_ADDRESS;
 }
-
 /** Human-readable labels */
 export function premiumLabel(isReverse: boolean): string {
   return isReverse ? "EURC" : "USDC";
 }
-
 export function collateralLabel(isReverse: boolean): string {
   return isReverse ? "USDC" : "EURC";
 }
@@ -31,20 +28,6 @@ export const BULWARC_ABI = [
   {
     type: "function",
     name: "createShield",
-    inputs: [
-      { name: "strike", type: "uint256" },
-      { name: "notional", type: "uint256" },
-      { name: "premium", type: "uint256" },
-      { name: "expiry", type: "uint256" },
-      { name: "validator", type: "address" },
-      { name: "isReverse", type: "bool" },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "createAndFundShield",
     inputs: [
       { name: "strike", type: "uint256" },
       { name: "notional", type: "uint256" },
@@ -86,14 +69,7 @@ export const BULWARC_ABI = [
   },
   {
     type: "function",
-    name: "exercise",
-    inputs: [{ name: "shieldId", type: "uint256" }],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "expire",
+    name: "settle",
     inputs: [{ name: "shieldId", type: "uint256" }],
     outputs: [],
     stateMutability: "nonpayable",
@@ -201,9 +177,15 @@ export const BULWARC_ABI = [
   },
   {
     type: "event",
-    name: "ShieldExercised",
+    name: "ShieldLocked",
+    inputs: [{ name: "shieldId", type: "uint256", indexed: true }],
+  },
+  {
+    type: "event",
+    name: "ShieldSettled",
     inputs: [
       { name: "shieldId", type: "uint256", indexed: true },
+      { name: "inTheMoney", type: "bool", indexed: false },
       { name: "payoff", type: "uint256", indexed: false },
     ],
   },
@@ -252,4 +234,6 @@ export const ERC20_ABI = [
   },
 ] as const;
 
-export const SHIELD_STATUS = ["CREATED", "PENDING", "LOCKED", "EXERCISED", "EXPIRED"] as const;
+// Status 3 = SETTLED (inTheMoney=true, was EXERCISED), Status 4 = SETTLED (inTheMoney=false, was EXPIRED)
+// But on-chain they may both map to a single settled status. We keep display labels:
+export const SHIELD_STATUS = ["CREATED", "PENDING", "LOCKED", "SETTLED", "EXPIRED"] as const;

@@ -54,8 +54,7 @@ export function ShieldDetail({ shield, walletClient, address, oraclePrice, curre
   const handleFund = () => exec("fundShield", [BigInt(s.id)], { token: premiumToken(s.isReverse), amount: s.premium }).then(onSuccess);
   const handleMatch = () => { const a = parseUnits(matchAmount, 6); exec("matchShield", [BigInt(s.id), address!, a], { token: collateralToken(s.isReverse), amount: a }).then(onSuccess); };
   const handleValidate = () => exec("validateDelivery", [BigInt(s.id), parseInt(deliveryInput)]).then(onSuccess);
-  const handleExercise = () => exec("exercise", [BigInt(s.id)]).then(onSuccess);
-  const handleExpire = () => exec("expire", [BigInt(s.id)]).then(onSuccess);
+  const handleSettle = () => exec("settle", [BigInt(s.id)]).then(onSuccess);
   const handleCancel = () => exec("cancel", [BigInt(s.id)]).then(onSuccess);
 
   return (
@@ -153,16 +152,10 @@ export function ShieldDetail({ shield, walletClient, address, oraclePrice, curre
               </button>
             </div>
           )}
-          {(s.status === 1 || s.status === 2) && isSubscriber && !isExpired && isInTheMoney && s.deliveryRate > 0 && (
-            <button onClick={handleExercise} disabled={pending}
-              className="px-4 py-2 bg-neon-green/15 border border-neon-green/40 text-neon-green text-xs font-bold rounded-lg hover:bg-neon-green/25 disabled:opacity-50 transition-all cursor-pointer">
-              {pending ? "..." : "Exercise"}
-            </button>
-          )}
           {(s.status === 1 || s.status === 2) && isExpired && (
-            <button onClick={handleExpire} disabled={pending}
-              className="px-4 py-2 border border-border text-dim text-xs rounded-lg hover:border-dim transition-all cursor-pointer">
-              {pending ? "..." : "Expire"}
+            <button onClick={handleSettle} disabled={pending || !walletClient}
+              className="px-4 py-2 bg-accent/15 border border-accent/40 text-accent text-xs font-bold rounded-lg hover:bg-accent/25 disabled:opacity-50 transition-all cursor-pointer">
+              {pending ? "..." : "Settle"}
             </button>
           )}
           {(s.status === 0 || s.status === 1) && s.filled === 0n && isSubscriber && (

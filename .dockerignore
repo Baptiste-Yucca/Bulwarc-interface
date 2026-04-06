@@ -5,3 +5,9 @@ backend/bulwarc.db*
 dist
 data
 .git
+.env
+backend/.env
+*.db-wal
+*.db-shm
+.DS_Store
+tmp

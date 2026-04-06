@@ -93,8 +93,7 @@ export function CallFlow({ shield, currencyMode, onClose }: Props) {
   const fundedEv = findEvent("ShieldFunded");
   const filledEvs = events.filter(e => e.event_name === "ShieldFilled");
   const lockedEv = findEvent("ShieldLocked");
-  const exercisedEv = findEvent("ShieldExercised");
-  const expiredEv = findEvent("ShieldExpired");
+  const settledEv = findEvent("ShieldSettled");
 
   const fmtTs = (ts: number) => new Date(ts * 1000).toLocaleString();
 
@@ -110,12 +109,14 @@ export function CallFlow({ shield, currencyMode, onClose }: Props) {
     ? s.subscriberFee - (s.subscriberFee * BigInt(Math.round(usedFeePct)) / 100n)
     : 0n;
 
-  // For exercised: get payoff from event
+  // Get payoff and inTheMoney from ShieldSettled event
   let payoff = 0n;
-  if (exercisedEv) {
+  let settledInTheMoney = false;
+  if (settledEv) {
     try {
-      const args = JSON.parse(exercisedEv.args_json);
+      const args = JSON.parse(settledEv.args_json);
       payoff = BigInt(args.payoff || "0");
+      settledInTheMoney = args.inTheMoney === true || args.inTheMoney === "true";
     } catch {}
   }
 
@@ -127,8 +128,9 @@ export function CallFlow({ shield, currencyMode, onClose }: Props) {
   // Guardian fees are not stored in shield struct — approximate from feeBps if known
   // For display, we show what we have
 
-  const isHit = s.status === 3;
-  const isMiss = s.status === 4;
+  const isSettled = s.status === 3 || s.status === 4;
+  const isHit = isSettled && settledInTheMoney;
+  const isMiss = isSettled && !settledInTheMoney;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
@@ -204,17 +206,27 @@ export function CallFlow({ shield, currencyMode, onClose }: Props) {
 
           {/* STEP 5: SETTLEMENT */}
           {isHit && (
-            <Step step="Step 5" title="HIT — Exercised" active
-              time={exercisedEv ? fmtTs(exercisedEv.block_timestamp) : undefined}
-              txHash={exercisedEv?.tx_hash}>
+            <Step step="Step 5" title="HIT — Settled In The Money" active
+              time={settledEv ? fmtTs(settledEv.block_timestamp) : undefined}
+              txHash={settledEv?.tx_hash}>
               <div className="text-[10px] text-dim mb-1">
-                Oracle &lt; strike → USD weakened vs EUR. Worker receives compensation.
+                Oracle &lt; strike → USD weakened vs EUR. Worker receives FX compensation.
               </div>
               {payoff > 0n && (
-                <TokenFlow from="Escrow" to="Worker" amount={fmt6(payoff)} token={cLabel} color="text-neon-green" />
+                <>
+                  <TokenFlow from="Escrow" to="Worker" amount={fmt6(payoff)} token={cLabel} color="text-neon-green" />
+                  <div className="text-[10px] text-dim mt-0.5 ml-8">FX payoff (scaled by {deliveryPct}% delivery)</div>
+                </>
               )}
               {s.filled - payoff > 0n && (
                 <TokenFlow from="Escrow" to="Guardians" amount={fmt6(s.filled - payoff)} token={cLabel} color={cColor} />
+              )}
+              {/* Guardian salary share for delivered work */}
+              {deliveryPct > 0 && (
+                <>
+                  <TokenFlow from="Escrow" to="Guardians" amount={fmt6(s.notional * BigInt(deliveryPct) / 100n)} token={pLabel} color={pColor} />
+                  <div className="text-[10px] text-dim mt-0.5 ml-8">Salary share ({deliveryPct}% delivered)</div>
+                </>
               )}
               {feeRefund > 0n && (
                 <TokenFlow from="Protocol" to="Worker" amount={fmt6(feeRefund)} token={pLabel} color="text-accent" />
@@ -223,23 +235,25 @@ export function CallFlow({ shield, currencyMode, onClose }: Props) {
           )}
 
           {isMiss && (
-            <Step step="Step 5" title="MISS — Expired" active
-              time={expiredEv ? fmtTs(expiredEv.block_timestamp) : undefined}
-              txHash={expiredEv?.tx_hash}>
+            <Step step="Step 5" title="MISS — Settled Out Of Money" active
+              time={settledEv ? fmtTs(settledEv.block_timestamp) : undefined}
+              txHash={settledEv?.tx_hash}>
               <div className="text-[10px] text-dim mb-1">
-                Oracle ≥ strike → USD stable or stronger. No protection needed.
+                Oracle ≥ strike → USD stable or stronger. No FX protection triggered.
               </div>
+              <TokenFlow from="Escrow" to="Worker" amount={fmt6(s.notional)} token={pLabel} color="text-neon-green" />
+              <div className="text-[10px] text-dim mt-0.5 ml-8">Worker gets salary back (no FX loss)</div>
               {s.filled > 0n && (
                 <TokenFlow from="Escrow" to="Guardians" amount={fmt6(s.filled)} token={cLabel} color={cColor} />
               )}
-              <div className="text-[10px] text-dim mt-0.5">Guardians keep the premium earned at match time</div>
+              <div className="text-[10px] text-dim mt-0.5 ml-8">Guardians get collateral back + keep premium earned at match</div>
               {feeRefund > 0n && (
                 <TokenFlow from="Protocol" to="Worker" amount={fmt6(feeRefund)} token={pLabel} color="text-accent" />
               )}
             </Step>
           )}
 
-          {!isHit && !isMiss && (
+          {!isSettled && (
             <Step step="Step 5" title="Pending settlement...">
               <div className="text-[10px] text-dim">Shield is still active. Awaiting expiry or exercise.</div>
             </Step>
@@ -247,7 +261,7 @@ export function CallFlow({ shield, currencyMode, onClose }: Props) {
         </div>
 
         {/* Settlement Summary */}
-        {(isHit || isMiss) && (
+        {isSettled && (
           <div className="bg-bg/60 rounded-xl p-4 border border-border/50">
             <div className="text-[10px] uppercase tracking-widest text-accent font-mono font-bold mb-3 glow-amber">
               Settlement Summary
@@ -257,8 +271,12 @@ export function CallFlow({ shield, currencyMode, onClose }: Props) {
               <SummaryRow
                 party="Worker"
                 paid="-"
-                received={isHit && payoff > 0n ? `${fmt6(payoff)} ${cLabel}` : "-"}
-                extra={feeRefund > 0n ? `+${fmt6(feeRefund)} ${pLabel} refund` : undefined}
+                received={
+                  isHit
+                    ? payoff > 0n ? `${fmt6(payoff)} ${cLabel}` : "-"
+                    : `${fmt6(s.notional)} ${pLabel} (salary back)`
+                }
+                extra={feeRefund > 0n ? `+${fmt6(feeRefund)} ${pLabel} fee refund` : undefined}
                 color="text-neon-green"
               />
               {/* Employer */}
@@ -282,7 +300,7 @@ export function CallFlow({ shield, currencyMode, onClose }: Props) {
               <SummaryRow
                 party="Protocol"
                 paid="-"
-                received={`${fmt6(protocolPremiumFee)} ${pLabel} fees`}
+                received={protocolPremiumFee > 0n ? `${fmt6(protocolPremiumFee)} ${pLabel} fees` : "Fees refunded"}
                 color="text-accent"
               />
             </div>

@@ -12,11 +12,12 @@ import { FilterModal, DEFAULT_FILTERS, type Filters } from "./components/FilterM
 import { Billing } from "./components/Billing";
 import { CallFlow } from "./components/CallFlow";
 import { TxToasts } from "./components/TxToasts";
+import { Treasury } from "./components/Treasury";
 import type { CurrencyMode } from "./config/display";
 import type { TxCallbacks } from "./hooks/useContractWrite";
 import "./App.css";
 
-type Modal = "none" | "detail" | "create" | "my-shields" | "my-salary" | "billing" | "filters" | "callflow";
+type Modal = "none" | "detail" | "create" | "my-shields" | "my-salary" | "billing" | "filters" | "callflow" | "treasury";
 
 function App() {
   const { address, walletClient, connect, disconnect, connecting } = useWallet();
@@ -73,6 +74,7 @@ function App() {
         onDisconnect={disconnect}
         currencyMode={currencyMode}
         onToggleCurrency={() => setCurrencyMode((m) => (m === "EUR/USD" ? "USD/EUR" : "EUR/USD"))}
+        onOpenTreasury={() => setModal("treasury")}
       />
 
       {/* Main content: Order Book */}
@@ -202,6 +204,10 @@ function App() {
           currencyMode={currencyMode}
           onClose={closeModal}
         />
+      )}
+
+      {modal === "treasury" && (
+        <Treasury onClose={closeModal} />
       )}
 
       {modal === "filters" && (
